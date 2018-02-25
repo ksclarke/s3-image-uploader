@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties>
+  <!-- Define message codes class name -->
+  <entry key="message-class-name">edu.ucla.library.s3image.MessageCodes</entry>
+  
+  <!-- To process file: -->
+  <!-- mvn info.freelibrary:freelib-utils:generate-codes -DmessageFiles=`ls src/main/resources/*_messages.xml` -->
+  
+  <!-- General utility messages -->
+  <entry key="T-001">CSV file with IDs and paths to images is required</entry>
+  <entry key="T-002">S3 upload bucket is required</entry>
+  <entry key="T-003">Ending upload process because max count of {} was reached</entry>
+  <entry key="T-004">Starting upload of images in CSV file: {}</entry>
+  <entry key="T-005">Uploading {} [{}]</entry>
+  <entry key="T-006">Image file not found: {}</entry>
+  <entry key="T-007"></entry>
+  <entry key="T-008"></entry>
+  <entry key="T-009"></entry>
+  <entry key="T-010"></entry>
+  <entry key="T-011"></entry>
+  <entry key="T-012"></entry>
+  <entry key="T-013"></entry>
+  <entry key="T-014"></entry>
+  <entry key="T-015"></entry>
+  <entry key="T-016"></entry>
+  <entry key="T-017"></entry>
+  <entry key="T-018"></entry>
+  <entry key="T-019"></entry>
+  <entry key="T-020"></entry>
+</properties>

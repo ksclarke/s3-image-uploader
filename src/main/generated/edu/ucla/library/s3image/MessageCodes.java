@@ -21,19 +21,19 @@ final public class MessageCodes {
 	 */
 	public static final String T_007 = "T-007";
 	/**
-	 * Message: 
+	 * Message: Image file not found: {}
 	 */
 	public static final String T_006 = "T-006";
 	/**
-	 * Message: 
+	 * Message: Uploading {} [{}]
 	 */
 	public static final String T_005 = "T-005";
 	/**
-	 * Message: 
+	 * Message: Starting upload of images in CSV file: {}
 	 */
 	public static final String T_004 = "T-004";
 	/**
-	 * Message: 
+	 * Message: Ending upload process because max count of {} was reached
 	 */
 	public static final String T_003 = "T-003";
 	/**

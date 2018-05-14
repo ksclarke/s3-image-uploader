@@ -57,6 +57,9 @@ public final class S3ImageUpload {
     @Option(name = { "-m", "--max" }, description = "A maximum number of files to upload")
     public int myMaxCount;
 
+    @Option(name = { "-r", "--region" }, description = "The upload bucket's region")
+    public String myRegion;
+
     /**
      * The main method for the reconciler program.
      *
@@ -77,8 +80,10 @@ public final class S3ImageUpload {
         Objects.requireNonNull(myCSVFile, LOGGER.getMessage(MessageCodes.T_001));
         Objects.requireNonNull(myDestination, LOGGER.getMessage(MessageCodes.T_002));
 
+
+        final Regions region = myRegion != null ? Regions.fromName(myRegion) : Regions.US_EAST_1;
         final PairtreeFactory factory = PairtreeFactory.getFactory(Vertx.factory.vertx(), PairtreeImpl.S3Bucket);
-        final AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1);
+        final AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withRegion(region);
         final AWSCredentials creds = builder.getCredentials().getCredentials();
         final AmazonS3 s3Client = builder.build();
 

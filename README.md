@@ -9,3 +9,5 @@ How to use:
 To see what arguments mean:
 
     AWS_PROFILE="jiiifylambda" java -jar target/s3-image-uploader-0.0.1.jar -h
+
+Region does not need to be supplied unless the ingest bucket's region is something other than the default of `us-east-1`.

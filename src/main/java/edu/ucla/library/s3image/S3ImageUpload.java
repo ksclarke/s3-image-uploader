@@ -37,7 +37,8 @@ import io.vertx.core.Vertx;
 /**
  * A throw-away command line program to upload images, with IDs, into an S3 bucket.
  * <p>
- * To use: <pre>java -cp target/s3-image-uploader-0.0.1.jar edu.ucla.library.s3image.S3ImageUpload -h</pre>
+ * To use: <code>java -jar target/s3-image-uploader-0.0.1.jar -h</code>
+ * For instance: <code>AWS_PROFILE=jiiifylambda java -jar target/s3-image-uploader-0.0.1.jar -b jiiify-tiler-ingest-bucket-us-west-1 -r us-west-1 -m 1 -c input.csv</code>
  * </p>
  */
 @Command(name = "edu.ucla.library.s3image.S3ImageUpload", description = "An S3 image uploader")

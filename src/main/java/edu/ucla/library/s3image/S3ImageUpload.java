@@ -11,7 +11,6 @@ import java.util.Objects;
 
 import javax.inject.Inject;
 
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -22,8 +21,6 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
-import info.freelibrary.pairtree.PairtreeFactory;
-import info.freelibrary.pairtree.PairtreeFactory.PairtreeImpl;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -32,13 +29,14 @@ import io.airlift.airline.Command;
 import io.airlift.airline.HelpOption;
 import io.airlift.airline.Option;
 import io.airlift.airline.SingleCommand;
-import io.vertx.core.Vertx;
 
 /**
  * A throw-away command line program to upload images, with IDs, into an S3 bucket.
  * <p>
- * To use: <code>java -jar target/s3-image-uploader-0.0.1.jar -h</code>
- * For instance: <code>AWS_PROFILE=jiiifylambda java -jar target/s3-image-uploader-0.0.1.jar -b jiiify-tiler-ingest-bucket-us-west-1 -r us-west-1 -m 1 -c input.csv</code>
+ * To use: <code>java -jar target/s3-image-uploader-0.0.1.jar -h</code> For instance: <code>
+ *   AWS_PROFILE=jiiifylambda java -jar target/s3-image-uploader-0.0.1.jar \
+ *    -b jiiify-tiler-ingest-bucket-us-west-1 -r us-west-1 -m 1 -c input.csv
+ * </code>
  * </p>
  */
 @Command(name = "edu.ucla.library.s3image.S3ImageUpload", description = "An S3 image uploader")
@@ -81,11 +79,8 @@ public final class S3ImageUpload {
         Objects.requireNonNull(myCSVFile, LOGGER.getMessage(MessageCodes.T_001));
         Objects.requireNonNull(myDestination, LOGGER.getMessage(MessageCodes.T_002));
 
-
         final Regions region = myRegion != null ? Regions.fromName(myRegion) : Regions.US_EAST_1;
-        final PairtreeFactory factory = PairtreeFactory.getFactory(Vertx.factory.vertx(), PairtreeImpl.S3Bucket);
         final AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withRegion(region);
-        final AWSCredentials creds = builder.getCredentials().getCredentials();
         final AmazonS3 s3Client = builder.build();
 
         try {
@@ -106,24 +101,18 @@ public final class S3ImageUpload {
 
                     LOGGER.debug(MessageCodes.T_005, id, path);
 
-                    try {
-                        final FileInputStream inStream = new FileInputStream(path);
-                        final ObjectMetadata metadata = new ObjectMetadata();
-                        final PutObjectRequest req = new PutObjectRequest(myDestination, path, inStream, metadata);
-
-                        metadata.setContentLength(new File(path).length());
-                        metadata.setContentType(FileUtils.getMimeType(path));
-                        metadata.addUserMetadata("id", id);
-
-                        s3Client.putObject(req);
-
-                        count++;
-                    } catch (final FileNotFoundException details) {
-                        LOGGER.error(MessageCodes.T_006, path);
-                    }
+                    count = upload(id, path, s3Client, count);
                 } else if (count >= myMaxCount) {
                     LOGGER.info(MessageCodes.T_003, myMaxCount);
                     break;
+                } else if (image.length == 1) {
+                    final String path = image[0];
+                    final String[] parts = path.split("/");
+                    final String id = FileUtils.stripExt(parts[parts.length - 1]);
+
+                    LOGGER.debug(MessageCodes.T_005, id, path);
+
+                    count = upload(id, path, s3Client, count);
                 }
             }
         } catch (final IOException details) {
@@ -131,4 +120,24 @@ public final class S3ImageUpload {
         }
     }
 
+    private int upload(final String aID, final String aPath, final AmazonS3 aS3Client, final int aCount) {
+        try {
+            final FileInputStream inStream = new FileInputStream(aPath);
+            final ObjectMetadata metadata = new ObjectMetadata();
+            final PutObjectRequest req = new PutObjectRequest(myDestination, aPath, inStream, metadata);
+
+            metadata.setContentLength(new File(aPath).length());
+            metadata.setContentType(FileUtils.getMimeType(aPath));
+            metadata.addUserMetadata("id", aID);
+
+            aS3Client.putObject(req);
+
+            return aCount + 1;
+        } catch (final FileNotFoundException details) {
+            LOGGER.error(MessageCodes.T_006, aPath);
+
+            // We're not actually throwing an exception, just not counting it as a successful upload
+            return aCount;
+        }
+    }
 }

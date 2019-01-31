@@ -5,7 +5,7 @@ package edu.ucla.library.s3image;
 final public class MessageCodes {
 
 	/**
-	 * Message: Uploading {} [{}]
+	 * Message: Uploading {} -> {} [{}]
 	 */
 	public static final String T_005 = "T-005";
 	/**

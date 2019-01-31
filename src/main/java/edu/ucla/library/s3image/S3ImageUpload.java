@@ -92,6 +92,8 @@ public final class S3ImageUpload {
 
             LOGGER.info(MessageCodes.T_004, myCSVFile);
 
+            // If we have an ID, set it and use the file system path for the image's S3 path
+            // If we don't have an ID, set the file name as the ID and use that as the S3 path
             while (iterator.hasNext()) {
                 final String[] image = iterator.next();
 
@@ -101,7 +103,7 @@ public final class S3ImageUpload {
 
                     LOGGER.debug(MessageCodes.T_005, id, path);
 
-                    count = upload(id, path, s3Client, count);
+                    count = upload(id, path, s3Client, count, false);
                 } else if (count >= myMaxCount) {
                     LOGGER.info(MessageCodes.T_003, myMaxCount);
                     break;
@@ -110,9 +112,7 @@ public final class S3ImageUpload {
                     final String[] parts = path.split("/");
                     final String id = FileUtils.stripExt(parts[parts.length - 1]);
 
-                    LOGGER.debug(MessageCodes.T_005, id, path);
-
-                    count = upload(id, path, s3Client, count);
+                    count = upload(id, path, s3Client, count, true);
                 }
             }
         } catch (final IOException details) {
@@ -120,17 +120,36 @@ public final class S3ImageUpload {
         }
     }
 
-    private int upload(final String aID, final String aPath, final AmazonS3 aS3Client, final int aCount) {
+    /**
+     * Upload the image to S3.
+     * 
+     * @param aID The ID of the image being uploaded
+     * @param aPath The local file system path for the image
+     * @param aS3Client The client used to upload the image
+     * @param aCount The sequence number of this upload
+     * @param aIDPath Whether the ID should be used as the S3 path
+     * @return The sequence number of the next upload
+     */
+    private int upload(final String aID, final String aPath, final AmazonS3 aS3Client, final int aCount,
+            final boolean aIDPath) {
         try {
             final FileInputStream inStream = new FileInputStream(aPath);
             final ObjectMetadata metadata = new ObjectMetadata();
-            final PutObjectRequest req = new PutObjectRequest(myDestination, aPath, inStream, metadata);
+            final PutObjectRequest request;
+
+            if (aIDPath) {
+                LOGGER.debug(MessageCodes.T_005, aID, aID, aPath);
+                request = new PutObjectRequest(myDestination, aID, inStream, metadata);
+            } else {
+                LOGGER.debug(MessageCodes.T_005, aID, aPath, aPath);
+                request = new PutObjectRequest(myDestination, aPath, inStream, metadata);
+            }
 
             metadata.setContentLength(new File(aPath).length());
             metadata.setContentType(FileUtils.getMimeType(aPath));
             metadata.addUserMetadata("id", aID);
 
-            aS3Client.putObject(req);
+            aS3Client.putObject(request);
 
             return aCount + 1;
         } catch (final FileNotFoundException details) {
